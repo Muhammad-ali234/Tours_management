@@ -12,7 +12,7 @@ Tours App is a Flutter-based window application designed to manage tour records 
 
 ## Screenshots
 
-[Insert screenshots of the app here, showcasing its UI and functionality]
+![alt text](image.png)
 
 ## Getting Started
 
