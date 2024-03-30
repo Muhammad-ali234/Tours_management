@@ -1,6 +1,6 @@
 # Tours App
 
-Tours App is a Flutter-based mobile application designed to manage tour records efficiently. It allows users to add, view, edit, and delete tour records conveniently.
+Tours App is a Flutter-based window application designed to manage tour records efficiently. It allows users to add, view, edit, and delete tour records conveniently.
 
 ## Features
 
