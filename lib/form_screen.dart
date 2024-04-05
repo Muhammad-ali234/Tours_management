@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:toursapp/db_helper.dart';
+import 'package:provider/provider.dart';
 import 'package:toursapp/model.dart';
+import 'package:toursapp/tourdata.dart'; // Import your state management class
 
 class TourFormDialog extends StatefulWidget {
   final Tour? editedTour;
@@ -14,38 +15,36 @@ class TourFormDialog extends StatefulWidget {
 
 class _TourFormDialogState extends State<TourFormDialog> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController _ticketController = TextEditingController();
-  final TextEditingController _sectorController = TextEditingController();
-  final TextEditingController _invoiceAmountController =
-      TextEditingController();
-  final TextEditingController _netAmountController = TextEditingController();
-  //final TextEditingController _marginController = TextEditingController();
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _referenceController =
-      TextEditingController(); // Add TextEditingController for reference
-
-  final DatabaseHelper _databaseHelper = DatabaseHelper();
+  late TextEditingController _ticketController;
+  late TextEditingController _sectorController;
+  late TextEditingController _invoiceAmountController;
+  late TextEditingController _netAmountController;
+  late TextEditingController _nameController;
+  late TextEditingController _referenceController;
 
   @override
   void initState() {
     super.initState();
-    if (widget.editedTour != null) {
-      _ticketController.text = widget.editedTour!.ticket;
-      _sectorController.text = widget.editedTour!.sector;
-      _invoiceAmountController.text =
-          widget.editedTour!.invoiceAmount.toString();
-      _netAmountController.text = widget.editedTour!.netAmount.toString();
-      _nameController.text = widget.editedTour!.name;
-      _referenceController.text = widget.editedTour!.reference;
-    }
+    _ticketController =
+        TextEditingController(text: widget.editedTour?.ticket ?? '');
+    _sectorController =
+        TextEditingController(text: widget.editedTour?.sector ?? '');
+    _invoiceAmountController = TextEditingController(
+        text: widget.editedTour?.invoiceAmount.toString() ?? '');
+    _netAmountController = TextEditingController(
+        text: widget.editedTour?.netAmount.toString() ?? '');
+    _nameController =
+        TextEditingController(text: widget.editedTour?.name ?? '');
+    _referenceController =
+        TextEditingController(text: widget.editedTour?.reference ?? '');
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text(
-        'Edit Tour',
-        style: TextStyle(fontWeight: FontWeight.bold),
+      title: Text(
+        widget.editedTour != null ? 'Edit Tour' : 'Add New Tour',
+        style: const TextStyle(fontWeight: FontWeight.bold),
       ),
       content: SingleChildScrollView(
         child: SizedBox(
@@ -56,22 +55,9 @@ class _TourFormDialogState extends State<TourFormDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextFormField(
-                  controller: _ticketController,
-                  decoration: const InputDecoration(
-                    labelText: 'Ticket',
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter ticket details';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
                   controller: _nameController,
                   decoration: const InputDecoration(
-                    labelText: 'Name',
+                    labelText: 'Description',
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -82,14 +68,26 @@ class _TourFormDialogState extends State<TourFormDialog> {
                 ),
                 const SizedBox(height: 10),
                 TextFormField(
-                  controller:
-                      _referenceController, // Use the reference controller
+                  controller: _referenceController,
                   decoration: const InputDecoration(
                     labelText: 'Reference',
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter reference details';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 10),
+                TextFormField(
+                  controller: _ticketController,
+                  decoration: const InputDecoration(
+                    labelText: 'Ticket',
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please enter ticket details';
                     }
                     return null;
                   },
@@ -152,54 +150,44 @@ class _TourFormDialogState extends State<TourFormDialog> {
           ),
         ),
         ElevatedButton(
-          onPressed: () async {
+          onPressed: () {
             if (_formKey.currentState!.validate()) {
-              double invoiceAmount =
-                  double.parse(_invoiceAmountController.text);
-              double netAmount = double.parse(_netAmountController.text);
-              double marginCalc = invoiceAmount - netAmount;
-
-              final now = DateTime.now();
-              final formattedDate = '${now.year}-${now.month}-${now.day}';
-              final tour = Tour(
+              final newTour = Tour(
                 ticket: _ticketController.text,
                 sector: _sectorController.text,
-                date: formattedDate,
+                invoiceAmount: double.parse(_invoiceAmountController.text),
+                netAmount: double.parse(_netAmountController.text),
                 name: _nameController.text,
                 reference: _referenceController.text,
-                invoiceAmount: invoiceAmount,
-                netAmount: netAmount,
-                margin: marginCalc,
+                date: DateTime.now().toString(),
+                margin: double.parse(_invoiceAmountController.text) -
+                    double.parse(_netAmountController.text),
+                flagMonthYear: '',
               );
-
               if (widget.editedTour != null) {
-                tour.id = widget.editedTour!.id;
-                await _databaseHelper.updateTour(tour);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Tour data updated successfully!'),
-                    backgroundColor: Colors.green,
-                  ),
+                // Update existing tour
+                final updatedTour = Tour(
+                  id: widget.editedTour!.id,
+                  ticket: _ticketController.text,
+                  sector: _sectorController.text,
+                  invoiceAmount: double.parse(_invoiceAmountController.text),
+                  netAmount: double.parse(_netAmountController.text),
+                  name: _nameController.text,
+                  reference: _referenceController.text,
+                  date: widget.editedTour!.date,
+                  margin: double.parse(_invoiceAmountController.text) -
+                      double.parse(_netAmountController.text),
+                  flagMonthYear: widget.editedTour!.flagMonthYear,
                 );
-                Navigator.pop(context);
+                Provider.of<TourData>(context, listen: false)
+                    .editTour(widget.index!, updatedTour);
+                Navigator.pop(context, updatedTour);
               } else {
-                await _databaseHelper.insertTour(tour);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Tour data added successfully!'),
-                    backgroundColor: Colors.green,
-                  ),
-                );
-                Navigator.pop(context);
+                // Add new tour
+                Provider.of<TourData>(context, listen: false).addTour(newTour);
+                Navigator.pop(context, newTour);
               }
             }
-
-            _ticketController.clear();
-            _sectorController.clear();
-            _invoiceAmountController.clear();
-            _netAmountController.clear();
-
-            _nameController.clear(); // Clear name field controller
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
@@ -211,5 +199,16 @@ class _TourFormDialogState extends State<TourFormDialog> {
         ),
       ],
     );
+  }
+
+  @override
+  void dispose() {
+    _ticketController.dispose();
+    _sectorController.dispose();
+    _invoiceAmountController.dispose();
+    _netAmountController.dispose();
+    _nameController.dispose();
+    _referenceController.dispose();
+    super.dispose();
   }
 }

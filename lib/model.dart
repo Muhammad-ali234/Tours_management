@@ -1,13 +1,14 @@
 class Tour {
-  int? id; // Nullable, as it will be set by the database
-  String ticket; // Changed from name to ticket
-  String sector; // Added sector field
+  int? id;
+  String ticket;
+  String sector;
   String date;
-  String name; // Added name field
+  String name;
   double invoiceAmount;
   double netAmount;
   double margin;
-  String reference; // Added reference field
+  String reference;
+  String flagMonthYear;
 
   Tour({
     this.id,
@@ -20,6 +21,7 @@ class Tour {
     this.invoiceAmount = 0.0,
     this.netAmount = 0.0,
     this.margin = 0.0,
+    required this.flagMonthYear,
   });
 
   // Convert the Tour object to a map
@@ -35,6 +37,7 @@ class Tour {
       'invoiceAmount': invoiceAmount,
       'netAmount': netAmount,
       'margin': margin,
+      'flagMonthYear': flagMonthYear
     };
   }
 
@@ -51,6 +54,7 @@ class Tour {
       invoiceAmount: map['invoiceAmount'] ?? 0.0,
       netAmount: map['netAmount'] ?? 0.0,
       margin: map['margin'] ?? 0.0,
+      flagMonthYear: map['flagMonthYear'] ?? 0.0,
     );
   }
 }

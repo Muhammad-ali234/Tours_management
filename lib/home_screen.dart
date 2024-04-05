@@ -1,63 +1,58 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:open_file/open_file.dart';
+import 'package:provider/provider.dart';
+import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+import 'package:toursapp/data_table_source.dart'; // Alias for data_table_source.dart
 import 'package:toursapp/db_helper.dart';
 import 'package:toursapp/form_screen.dart';
 import 'package:toursapp/model.dart';
+import 'package:toursapp/tourdata.dart';
+// Import your state management class
 
 class TourListScreen extends StatefulWidget {
   const TourListScreen({super.key});
 
   @override
-  State<TourListScreen> createState() => _TourListScreenState();
+  _TourListScreenState createState() => _TourListScreenState();
 }
 
 class _TourListScreenState extends State<TourListScreen> {
-  List<Tour>? tourData; // List to hold tour data, make it nullable
-  final DatabaseHelper _databaseHelper =
-      DatabaseHelper(); // Instance of DatabaseHelper
-  String searchText = '';
+  late TextEditingController _searchController;
+
+  final DatabaseHelper _databaseHelper = DatabaseHelper();
+  int selectedMonth = 4;
+  int selectedYear = 2024;
+
+  void fetchMonthTourData(context, int month, int year) {
+    Provider.of<TourData>(context, listen: false)
+        .fetchMonthTourData(context, month, year);
+  }
 
   @override
   void initState() {
     super.initState();
-    fetchTourData(); // Fetch tour data when the screen initializes
+    _searchController = TextEditingController();
+    Provider.of<TourData>(context, listen: false).fetchTours();
   }
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    fetchTourData(); // Fetch tour data when the dependencies change
-  }
-
-  // Method to fetch tour data from the database
-  void fetchTourData() async {
-    List<Tour> tours = await _databaseHelper.getTours();
-    setState(() {
-      tourData = tours;
-    });
-  }
-
-  List<Tour> filteredTourData() {
-    if (searchText.isEmpty) {
-      return tourData ?? [];
-    } else {
-      return (tourData ?? []).where((tour) {
-        return tour.name.toLowerCase().contains(searchText.toLowerCase()) ||
-            (tour.reference.toLowerCase().contains(searchText.toLowerCase()));
-      }).toList();
-    }
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset(
@@ -65,36 +60,103 @@ class _TourListScreenState extends State<TourListScreen> {
                   width: 150,
                   height: 150,
                 ),
+                const SizedBox(width: 10),
                 Image.asset(
                   'assets/logo2.png',
                   width: 600,
                   height: 200,
                 ),
-                const SizedBox(
-                  width: 20,
-                ),
               ],
             ),
-            const SizedBox(height: 4),
-            Container(
-              width: double.infinity,
-              height: 50,
-              decoration: BoxDecoration(color: Colors.grey[300]),
-              child: const Center(
-                child: Text(
-                  'Monthly Sheet',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 30,
-                    color: Colors.orange,
-                  ),
-                ),
-              ),
-            ),
+            const Divider(),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          child: const Text(
+                            'Generate Report',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            DropdownButton<int>(
+                              value: selectedMonth,
+                              items: List.generate(12, (index) {
+                                return DropdownMenuItem<int>(
+                                  value: index + 1,
+                                  child: Text(
+                                    _getMonthName(index + 1),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                );
+                              }),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedMonth = value!;
+                                });
+                              },
+                              underline: Container(),
+                            ),
+                            DropdownButton<int>(
+                              value: selectedYear,
+                              items: List.generate(10, (index) {
+                                return DropdownMenuItem<int>(
+                                  value: DateTime.now().year - index,
+                                  child: Text(
+                                    (DateTime.now().year - index).toString(),
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                );
+                              }),
+                              onChanged: (value) {
+                                setState(() {
+                                  selectedYear = value!;
+                                });
+                              },
+                              underline: Container(),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        IconButton(
+                            onPressed: () {
+                              fetchMonthTourData(
+                                  context, selectedMonth, selectedYear);
+                            },
+                            icon: const Icon(Icons.picture_as_pdf)),
+                        const SizedBox(height: 5),
+                        IconButton(
+                            onPressed: () {
+                              // Provider.of<TourData>(context, listen: false).generateExcel(context, _selectedMonth, _selectedYear);
+                            },
+                            icon: const Icon(Icons.abc))
+                      ],
+                    ),
+                  ],
+                ),
                 SizedBox(
                   height: 56,
                   child: ElevatedButton(
@@ -105,210 +167,200 @@ class _TourListScreenState extends State<TourListScreen> {
                         builder: (BuildContext context) {
                           return const TourFormDialog();
                         },
-                      ).then((_) {
-                        // Refresh tour data after closing the dialog
-                        fetchTourData();
-                      });
+                      );
                     },
-                    child: const Text('Add New Record'),
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 16, horizontal: 24),
+                      backgroundColor: Colors.blue,
+                      elevation: 6,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    child: const Text(
+                      'Add New Record',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
                 Container(
                   width: 300,
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: TextField(
+                    controller: _searchController,
                     decoration: const InputDecoration(
                       hintText: 'Search by Name',
                       suffixIcon: Icon(Icons.search),
                       border: OutlineInputBorder(),
                     ),
                     onChanged: (value) {
-                      setState(() {
-                        searchText = value;
-                      });
+                      Provider.of<TourData>(context, listen: false)
+                          .updateSearchText(value);
                     },
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Expanded(
-              child: SizedBox(
-                width: double.infinity,
-                child: SingleChildScrollView(
-                  scrollDirection: Axis.vertical,
-                  child: tourData != null
-                      ? searchText.isEmpty
-                          ? buildDataTable(tourData!)
-                          : buildDataTable(filteredTourData())
-                      : const Center(
-                          child: CircularProgressIndicator(),
-                        ),
+            const SizedBox(height: 4),
+            Container(
+              width: double.infinity,
+              height: 40,
+              decoration: BoxDecoration(color: Colors.grey[300]),
+              child: const Center(
+                child: Text(
+                  'Monthly Sheet',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 27,
+                    color: Colors.orange,
+                  ),
                 ),
+              ),
+            ),
+            Expanded(
+              child: Consumer<TourData>(
+                builder: (context, tourData, _) {
+                  return tourData.isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : tourData.tours.isEmpty
+                          ? const Center(child: Text('No data available'))
+                          : SfDataGrid(
+                              source: TourDataSource(
+                                  tours: tourData.tours,
+                                  searchText: tourData.searchText,
+                                  context: context),
+                              columnWidthMode: ColumnWidthMode.fill,
+                              columns: <GridColumn>[
+                                GridColumn(
+                                  columnName: 'date',
+                                  label: Container(
+                                    padding: const EdgeInsets.all(16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text('Date'),
+                                  ),
+                                ),
+                                GridColumn(
+                                  columnName: 'name',
+                                  label: Container(
+                                    padding: const EdgeInsets.all(16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text('Description'),
+                                  ),
+                                ),
+                                GridColumn(
+                                  columnName: 'reference',
+                                  label: Container(
+                                    padding: const EdgeInsets.all(16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text('Reference'),
+                                  ),
+                                ),
+                                GridColumn(
+                                  columnName: 'ticket',
+                                  label: Container(
+                                    padding: const EdgeInsets.all(16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text('Ticket'),
+                                  ),
+                                ),
+                                GridColumn(
+                                  columnName: 'sector',
+                                  label: Container(
+                                    padding: const EdgeInsets.all(16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text('Sector'),
+                                  ),
+                                ),
+                                GridColumn(
+                                  columnName: 'invoiceAmount',
+                                  label: Container(
+                                    padding: const EdgeInsets.all(16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text('Invoice Amount'),
+                                  ),
+                                ),
+                                GridColumn(
+                                  columnName: 'netAmount',
+                                  label: Container(
+                                    padding: const EdgeInsets.all(16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text('Net Amount'),
+                                  ),
+                                ),
+                                GridColumn(
+                                  columnName: 'margin',
+                                  label: Container(
+                                    padding: const EdgeInsets.all(16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text('Margin'),
+                                  ),
+                                ),
+                                GridColumn(
+                                  columnName: 'edit',
+                                  label: Container(
+                                    padding: const EdgeInsets.all(16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text("Edit"),
+                                  ),
+                                ),
+                                GridColumn(
+                                  columnName: 'delete',
+                                  label: Container(
+                                    padding: const EdgeInsets.all(16.0),
+                                    alignment: Alignment.center,
+                                    child: const Text("Delete"),
+                                  ),
+                                ),
+                              ],
+                              rowHeight: 70,
+                            );
+                },
               ),
             ),
           ],
         ),
       ),
+      backgroundColor: Colors.white,
     );
   }
 
-  // Method to build DataTable widget
-  Widget buildDataTable(List<Tour> data) {
-    return DataTable(
-      columns: const [
-        DataColumn(
-          label: Text(
-            'Date',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'Name/Detail',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'Reference',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'Ticket',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'Sector',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'Invoice Amount',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'Net Amount',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'Margin',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        DataColumn(
-          label: Text(
-            'Actions',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ],
-      columnSpacing: 16,
-      rows: data.map((tour) {
-        return DataRow(cells: [
-          DataCell(Text(tour.date)),
-          DataCell(Text(tour.name)),
-          DataCell(Text(tour.reference)),
-          DataCell(Text(tour.ticket)),
-          DataCell(Text(tour.sector)),
-          DataCell(Text('${tour.invoiceAmount}')),
-          DataCell(Text('${tour.netAmount}')),
-          DataCell(Text('${tour.margin}')),
-          DataCell(Row(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.edit),
-                onPressed: () async {
-                  // Navigate to the form screen with the selected tour data for editing
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => TourFormDialog(
-                        editedTour: tour,
-                        index: tour.id, // Pass the index here
-                      ),
-                    ),
-                  ).then((_) {
-                    // Refresh tour data after closing the dialog
-                    fetchTourData();
-                  });
-                },
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete),
-                onPressed: () {
-                  // Implement delete functionality here
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: const Text('Delete Tour'),
-                        content: const Text(
-                            'Are you sure you want to delete this tour?'),
-                        actions: <Widget>[
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop(); // Close the dialog
-                            },
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () async {
-                              // Delete the tour from the database
-                              await _databaseHelper.deleteTour(tour.id!);
-                              // Refresh tour data after deleting
-                              fetchTourData();
-                              Navigator.of(context).pop(); // Close the dialog
-                            },
-                            child: const Text('Delete',
-                                style: TextStyle(color: Colors.red)),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-              ),
-            ],
-          )),
-        ]);
-      }).toList(),
-    );
+  String _getMonthName(int month) {
+    switch (month) {
+      case 1:
+        return 'January';
+      case 2:
+        return 'February';
+      case 3:
+        return 'March';
+      case 4:
+        return 'April';
+      case 5:
+        return 'May';
+      case 6:
+        return 'June';
+      case 7:
+        return 'July';
+      case 8:
+        return 'August';
+      case 9:
+        return 'September';
+      case 10:
+        return 'October';
+      case 11:
+        return 'November';
+      case 12:
+        return 'December';
+      default:
+        return '';
+    }
+  }
+
+  void _updateTourData() {
+    Provider.of<TourData>(context, listen: false).fetchTours();
   }
 }
