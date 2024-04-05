@@ -2,10 +2,14 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:open_file/open_file.dart';
+import 'package:provider/provider.dart';
+import 'package:toursapp/data_table_source.dart';
 import 'package:toursapp/db_helper.dart';
 import 'package:toursapp/model.dart';
 
 class TourData extends ChangeNotifier {
+  final BuildContext context; // Added context here
+
   final bool _isLoading = false;
   bool get isLoading => _isLoading;
   final DatabaseHelper _databaseHelper = DatabaseHelper();
@@ -15,6 +19,9 @@ class TourData extends ChangeNotifier {
   List<Tour> _tours = [];
   List<Tour> get tours => _tours;
 
+  // Constructor with context parameter
+  TourData(this.context);
+
   // Fetch tours from the database
   Future<void> fetchTours() async {
     List<Tour> tours = await _databaseHelper.getTours();
@@ -23,14 +30,14 @@ class TourData extends ChangeNotifier {
   }
 
   // Delete a tour by id
-  Future<void> deleteTour(int id) async {
+  Future<void> deleteTour(String id) async {
     await _databaseHelper.deleteTour(id);
     _tours.removeWhere((tour) => tour.id == id);
     notifyListeners();
   }
 
   // Edit a tour by id
-  Future<void> editTour(int id, Tour updatedTour) async {
+  Future<void> editTour(String id, Tour updatedTour) async {
     await _databaseHelper.updateTour(updatedTour);
     int index = _tours.indexWhere((tour) => tour.id == id);
     if (index != -1) {
@@ -52,13 +59,37 @@ class TourData extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> fetchMonthTourData(context, int month, int year) async {
+  Future<void> fetchMonthTourData(
+      BuildContext context, int month, int year, String type) async {
     final monthYear = '$month-$year';
     List<Tour> tours = await _databaseHelper.getToursForMonth(monthYear);
     _tours = tours;
     notifyListeners();
-    generatePDF(context, monthYear);
+    if (type == 'PDF') {
+      generatePDF(context, monthYear);
+      notifyListeners();
+    } else {
+      generateExcel(context, monthYear);
+      notifyListeners();
+    }
+
     print(monthYear);
+  }
+
+  Future<void> generateExcel(BuildContext context, String monthYear) async {
+    final File excelFile =
+        await _databaseHelper.generateExcelForMonth(monthYear);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Excel generated: ${excelFile.path}'),
+        action: SnackBarAction(
+          label: 'Open',
+          onPressed: () {
+            OpenFile.open(excelFile.path);
+          },
+        ),
+      ),
+    );
   }
 
   String _getMonthName(int month) {
@@ -92,7 +123,7 @@ class TourData extends ChangeNotifier {
     }
   }
 
-  Future<void> generatePDF(BuildContext context, monthYear) async {
+  Future<void> generatePDF(BuildContext context, String monthYear) async {
     final File pdfFile = await _databaseHelper.generatePDFForMonth(monthYear);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

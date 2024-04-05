@@ -6,13 +6,14 @@ import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:toursapp/model.dart';
+import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xlsio;
 
 class DatabaseHelper {
-  final String databaseName = "test1.db";
+  final String databaseName = "test6.db";
 
   String tourDataTable = '''
 CREATE TABLE tours (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  id TEXT PRIMARY KEY,
   ticket TEXT NOT NULL,
   sector TEXT NOT NULL,
   date TEXT NOT NULL,
@@ -58,7 +59,7 @@ CREATE TABLE tours (
     );
   }
 
-  Future<int> deleteTour(int? id) async {
+  Future<int> deleteTour(String? id) async {
     if (id == null) {
       throw ArgumentError('id cannot be null');
     }
@@ -226,6 +227,66 @@ CREATE TABLE tours (
     final output = await getTemporaryDirectory();
     final file = File('${output.path}/tours_$monthYear.pdf');
     await file.writeAsBytes(await pdf.save());
+    return file;
+  }
+
+  Future<File> generateExcelForMonth(String monthYear) async {
+    final List<Tour> tours = await getToursForMonth(monthYear);
+
+    final workbook = xlsio.Workbook();
+    final sheet = workbook.worksheets[0];
+
+    sheet.getRangeByIndex(1, 1).setText('Monthly Sheet');
+
+    // Write headers
+    sheet.getRangeByIndex(2, 1).setText('Date');
+    sheet.getRangeByIndex(2, 2).setText('Description');
+    sheet.getRangeByIndex(2, 3).setText('Invoice amount');
+    sheet.getRangeByIndex(2, 4).setText('Net Amount');
+    sheet.getRangeByIndex(2, 5).setText('Margin');
+
+    // Write tour data
+    for (int i = 0; i < tours.length; i++) {
+      final tour = tours[i];
+      sheet.getRangeByName('A${i + 3}').setText(tour.date);
+      sheet.getRangeByName('B${i + 3}').setText(tour.name);
+      sheet.getRangeByName('C${i + 3}').setText(tour.invoiceAmount.toString());
+      sheet.getRangeByName('D${i + 3}').setText(tour.netAmount.toString());
+      sheet.getRangeByName('E${i + 3}').setText(tour.margin.toString());
+    }
+
+    // Calculate total values
+    double totalInvoiceAmount = 0;
+    double totalNetAmount = 0;
+    double totalMargin = 0;
+
+    for (var tour in tours) {
+      totalInvoiceAmount += tour.invoiceAmount;
+      totalNetAmount += tour.netAmount;
+      totalMargin += tour.margin;
+    }
+
+    // Write total values to the last row of each numeric column
+    final int lastRowIndex = tours.length + 2;
+
+    sheet
+        .getRangeByName('C$lastRowIndex')
+        .setText(totalInvoiceAmount.toString());
+    sheet.getRangeByName('D$lastRowIndex').setText(totalNetAmount.toString());
+    sheet.getRangeByName('E$lastRowIndex').setText(totalMargin.toString());
+
+    // Clear "Date" and "Description" headers from the last row
+    sheet.getRangeByIndex(lastRowIndex, 1).setText('');
+    sheet.getRangeByIndex(lastRowIndex, 2).setText('');
+
+    // Save workbook
+    final output = await getTemporaryDirectory();
+    final file = File('${output.path}/tours_$monthYear.xlsx');
+    await workbook.save();
+
+    // Dispose the workbook
+    workbook.dispose();
+
     return file;
   }
 }

@@ -46,6 +46,8 @@ dependencies:
   test: ^1.24.9
   syncfusion_flutter_datagrid: ^25.1.37
   provider: ^6.1.2
+  uuid: ^4.3.3
+  syncfusion_flutter_xlsio: ^25.1.38
 
 
   

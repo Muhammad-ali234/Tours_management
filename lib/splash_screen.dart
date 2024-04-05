@@ -28,7 +28,7 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) =>
-          TourData(), // Replace YourProvider with your actual provider
+          TourData(context), // Replace YourProvider with your actual provider
       child: const Scaffold(
         body: Center(
           child: Column(

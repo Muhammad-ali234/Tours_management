@@ -12,10 +12,14 @@ class TourDataSource extends DataGridSource {
   final TourData _tourData;
 
   TourDataSource({
-    required List<Tour>? tours,
+    List<Tour>? tours,
     required this.searchText,
     required this.context,
   }) : _tourData = Provider.of<TourData>(context, listen: false) {
+    _initializeDataSource(tours);
+  }
+
+  void _initializeDataSource(List<Tour>? tours) {
     if (tours != null) {
       if (searchText.isEmpty) {
         toursData = tours;
@@ -27,6 +31,11 @@ class TourDataSource extends DataGridSource {
     }
   }
 
+  void updateDataSource(List<Tour> tours) {
+    toursData = tours;
+    notifyListeners();
+  }
+
   // Define a method to filter the tour data based on search text
   List<Tour> filteredTourData(List<Tour> tours, String searchText) {
     return tours.where((tour) {
@@ -35,29 +44,17 @@ class TourDataSource extends DataGridSource {
     }).toList();
   }
 
-  void deleteTour(int index) async {
-    if (toursData != null && index >= 0 && index < toursData!.length) {
-      int? id = toursData![index].id;
-      if (id != null) {
-        await _tourData.deleteTour(id);
-        toursData!.removeAt(index);
-        notifyListeners();
-      }
+  void _deleteTour(String id, List<Tour> tours) {
+    try {
+      _tourData.deleteTour(id);
+      updateDataSource(tours);
+      notifyListeners();
+    } catch (e) {
+      print("Error deleting tour: $e");
     }
   }
 
-  void editTour(int index, Tour updatedTour) async {
-    if (toursData != null && index >= 0 && index < toursData!.length) {
-      int? id = toursData![index].id;
-      if (id != null) {
-        await _tourData.editTour(id, updatedTour);
-        toursData![index] = updatedTour;
-        notifyListeners();
-      }
-    }
-  }
-
-  void _navigateToEditTour(Tour editedTour) async {
+  void _navigateToEditTour(Tour editedTour) {
     int index = toursData!.indexWhere((tour) => tour.id == editedTour.id);
     if (index != -1) {
       toursData![index] = editedTour; // Update the tour in the list
@@ -82,11 +79,11 @@ class TourDataSource extends DataGridSource {
         // Add delete and edit icons here
         DataGridCell<String>(
           columnName: 'edit',
-          value: e.id.toString(),
+          value: e.id,
         ),
         DataGridCell<String>(
           columnName: 'delete',
-          value: e.id.toString(),
+          value: e.id,
         ),
       ]);
     }).toList();
@@ -105,7 +102,7 @@ class TourDataSource extends DataGridSource {
             ),
             onPressed: () {
               if (e.columnName == 'edit') {
-                int id = int.parse(e.value);
+                String id = e.value;
                 int index = toursData!.indexWhere((tour) => tour.id == id);
                 if (index != -1) {
                   Tour selectedTour = toursData![index];
@@ -124,11 +121,10 @@ class TourDataSource extends DataGridSource {
                   });
                 }
               } else if (e.columnName == 'delete') {
-                int id = int.parse(e.value);
-                int index = toursData!.indexWhere((tour) => tour.id == id);
-                if (index != -1) {
-                  deleteTour(index);
-                }
+                print(e.value);
+                String id = e.value;
+
+                _deleteTour(id, toursData!);
               }
             },
           );

@@ -1,5 +1,7 @@
+import 'package:uuid/uuid.dart';
+
 class Tour {
-  int? id;
+  String id;
   String ticket;
   String sector;
   String date;
@@ -11,29 +13,27 @@ class Tour {
   String flagMonthYear;
 
   Tour({
-    this.id,
-    required this.ticket, // Changed parameter name from name to ticket
-    required this.sector, // Added sector parameter
+    required this.id,
+    required this.ticket,
+    required this.sector,
+    required this.invoiceAmount,
+    required this.netAmount,
+    required this.name,
+    required this.reference,
     required this.date,
-    required this.name, // Added name parameter
-    required this.reference, // Added reference parameter
-
-    this.invoiceAmount = 0.0,
-    this.netAmount = 0.0,
-    this.margin = 0.0,
+    required this.margin,
     required this.flagMonthYear,
-  });
+  }); // Generate unique ID using UUID
 
   // Convert the Tour object to a map
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'ticket': ticket, // Changed from name to ticket
-      'sector': sector, // Added sector
+      'ticket': ticket,
+      'sector': sector,
       'date': date,
-      'name': name, // Added name
-      'reference': reference, // Added reference
-
+      'name': name,
+      'reference': reference,
       'invoiceAmount': invoiceAmount,
       'netAmount': netAmount,
       'margin': margin,
@@ -45,16 +45,15 @@ class Tour {
   static Tour fromMap(Map<String, dynamic> map) {
     return Tour(
       id: map['id'],
-      ticket: map['ticket'], // Changed from name to ticket
-      sector: map['sector'], // Added sector
+      ticket: map['ticket'],
+      sector: map['sector'],
       date: map['date'],
-      name: map['name'], // Added name
-      reference: map['reference'], // Added reference
-
+      name: map['name'],
+      reference: map['reference'],
       invoiceAmount: map['invoiceAmount'] ?? 0.0,
       netAmount: map['netAmount'] ?? 0.0,
       margin: map['margin'] ?? 0.0,
-      flagMonthYear: map['flagMonthYear'] ?? 0.0,
+      flagMonthYear: map['flagMonthYear'] ?? '', // Ensure it's a String
     );
   }
 }

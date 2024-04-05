@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:toursapp/model.dart';
-import 'package:toursapp/tourdata.dart'; // Import your state management class
+import 'package:toursapp/tourdata.dart';
+import 'package:uuid/uuid.dart'; // Import your state management class
 
 class TourFormDialog extends StatefulWidget {
   final Tour? editedTour;
-  final int? index;
+  final String? index;
 
   const TourFormDialog({super.key, this.editedTour, this.index});
 
@@ -152,20 +153,21 @@ class _TourFormDialogState extends State<TourFormDialog> {
         ElevatedButton(
           onPressed: () {
             if (_formKey.currentState!.validate()) {
+              final now = DateTime.now();
               final newTour = Tour(
+                id: const Uuid().v4(),
                 ticket: _ticketController.text,
                 sector: _sectorController.text,
                 invoiceAmount: double.parse(_invoiceAmountController.text),
                 netAmount: double.parse(_netAmountController.text),
                 name: _nameController.text,
                 reference: _referenceController.text,
-                date: DateTime.now().toString(),
+                date: '${now.day}-${now.month}-${now.year}'.toString(),
                 margin: double.parse(_invoiceAmountController.text) -
                     double.parse(_netAmountController.text),
-                flagMonthYear: '',
+                flagMonthYear: '${now.month}-${now.year}',
               );
               if (widget.editedTour != null) {
-                // Update existing tour
                 final updatedTour = Tour(
                   id: widget.editedTour!.id,
                   ticket: _ticketController.text,

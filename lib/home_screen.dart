@@ -25,9 +25,10 @@ class _TourListScreenState extends State<TourListScreen> {
   int selectedMonth = 4;
   int selectedYear = 2024;
 
-  void fetchMonthTourData(context, int month, int year) {
+  void fetchMonthTourData(context, int month, int year, String type) {
     Provider.of<TourData>(context, listen: false)
-        .fetchMonthTourData(context, month, year);
+        .fetchMonthTourData(context, month, year, type);
+    _updateTourData();
   }
 
   @override
@@ -68,7 +69,22 @@ class _TourListScreenState extends State<TourListScreen> {
                 ),
               ],
             ),
-            const Divider(),
+            const SizedBox(height: 4),
+            Container(
+              width: double.infinity,
+              height: 40,
+              decoration: BoxDecoration(color: Colors.grey[300]),
+              child: const Center(
+                child: Text(
+                  'Monthly Sheet',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 27,
+                    color: Colors.orange,
+                  ),
+                ),
+              ),
+            ),
             const SizedBox(height: 8),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -81,11 +97,13 @@ class _TourListScreenState extends State<TourListScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
                           child: const Text(
                             'Generate Report',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 22,
                               fontWeight: FontWeight.bold,
+                              color: Colors.blue,
                             ),
                           ),
                         ),
@@ -99,7 +117,7 @@ class _TourListScreenState extends State<TourListScreen> {
                                   child: Text(
                                     _getMonthName(index + 1),
                                     style: const TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 18,
                                       color: Colors.black87,
                                     ),
                                   ),
@@ -112,6 +130,7 @@ class _TourListScreenState extends State<TourListScreen> {
                               },
                               underline: Container(),
                             ),
+                            const SizedBox(width: 10),
                             DropdownButton<int>(
                               value: selectedYear,
                               items: List.generate(10, (index) {
@@ -120,7 +139,7 @@ class _TourListScreenState extends State<TourListScreen> {
                                   child: Text(
                                     (DateTime.now().year - index).toString(),
                                     style: const TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 18,
                                       color: Colors.black87,
                                     ),
                                   ),
@@ -137,22 +156,34 @@ class _TourListScreenState extends State<TourListScreen> {
                         ),
                       ],
                     ),
+                    const SizedBox(width: 20),
                     Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         IconButton(
-                            onPressed: () {
-                              fetchMonthTourData(
-                                  context, selectedMonth, selectedYear);
-                            },
-                            icon: const Icon(Icons.picture_as_pdf)),
+                          onPressed: () {
+                            fetchMonthTourData(
+                                context, selectedMonth, selectedYear, 'PDF');
+                          },
+                          icon: const Icon(
+                            Icons.picture_as_pdf,
+                            size: 30,
+                            color: Colors.green,
+                          ),
+                        ),
                         const SizedBox(height: 5),
                         IconButton(
-                            onPressed: () {
-                              // Provider.of<TourData>(context, listen: false).generateExcel(context, _selectedMonth, _selectedYear);
-                            },
-                            icon: const Icon(Icons.abc))
+                          onPressed: () {
+                            fetchMonthTourData(
+                                context, selectedMonth, selectedYear, 'EXCEL');
+                          },
+                          icon: const Icon(
+                            Icons.insert_drive_file,
+                            size: 30,
+                            color: Colors.blue,
+                          ),
+                        )
                       ],
                     ),
                   ],
@@ -172,7 +203,7 @@ class _TourListScreenState extends State<TourListScreen> {
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                           vertical: 16, horizontal: 24),
-                      backgroundColor: Colors.blue,
+                      backgroundColor: Colors.white,
                       elevation: 6,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
@@ -183,7 +214,7 @@ class _TourListScreenState extends State<TourListScreen> {
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                        color: Colors.blue,
                       ),
                     ),
                   ),
@@ -205,22 +236,6 @@ class _TourListScreenState extends State<TourListScreen> {
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 4),
-            Container(
-              width: double.infinity,
-              height: 40,
-              decoration: BoxDecoration(color: Colors.grey[300]),
-              child: const Center(
-                child: Text(
-                  'Monthly Sheet',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 27,
-                    color: Colors.orange,
-                  ),
-                ),
-              ),
             ),
             Expanded(
               child: Consumer<TourData>(

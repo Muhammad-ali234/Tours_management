@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
       create: (context) =>
-          TourData(), // Provide your state management class here
+          TourData(context), // Provide your state management class here
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'Tour Management',
