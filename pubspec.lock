@@ -121,6 +121,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.7.2"
+  cross_file:
+    dependency: transitive
+    description:
+      name: cross_file
+      sha256: "55d7b444feb71301ef6b8838dbc1ae02e63dd48c8773f3810ff53bb1e2945b32"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.4+1"
   crypto:
     dependency: transitive
     description:
@@ -161,6 +169,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.0"
+  file_picker:
+    dependency: "direct main"
+    description:
+      name: file_picker
+      sha256: d1d0ac3966b36dc3e66eeefb40280c17feb87fa2099c6e22e6a1fc959327bd03
+      url: "https://pub.dev"
+    source: hosted
+    version: "8.0.0+1"
+  filepicker_windows:
+    dependency: "direct main"
+    description:
+      name: filepicker_windows
+      sha256: "93981269ecc2bf71be6e4c3ae030f8f9911e5f7ce69f109e4ffee42bd9ecdda9"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.0"
   fixnum:
     dependency: transitive
     description:
@@ -190,8 +214,21 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.1"
+  flutter_plugin_android_lifecycle:
+    dependency: transitive
+    description:
+      name: flutter_plugin_android_lifecycle
+      sha256: b068ffc46f82a55844acfa4fdbb61fad72fa2aef0905548419d97f0f95c456da
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.17"
   flutter_test:
     dependency: "direct dev"
+    description: flutter
+    source: sdk
+    version: "0.0.0"
+  flutter_web_plugins:
+    dependency: transitive
     description: flutter
     source: sdk
     version: "0.0.0"
@@ -612,10 +649,10 @@ packages:
     dependency: transitive
     description:
       name: sqlite3
-      sha256: "072128763f1547e3e9b4735ce846bfd226d68019ccda54db4cd427b12dfdedc9"
+      sha256: "1abbeb84bf2b1a10e5e1138c913123c8aa9d83cd64e5f9a0dd847b3c83063202"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.0"
+    version: "2.4.2"
   stack_trace:
     dependency: transitive
     description:

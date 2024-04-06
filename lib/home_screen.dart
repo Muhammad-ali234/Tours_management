@@ -7,6 +7,7 @@ import 'package:syncfusion_flutter_datagrid/datagrid.dart';
 import 'package:toursapp/data_table_source.dart'; // Alias for data_table_source.dart
 import 'package:toursapp/db_helper.dart';
 import 'package:toursapp/form_screen.dart';
+import 'package:toursapp/login_screen.dart';
 import 'package:toursapp/model.dart';
 import 'package:toursapp/tourdata.dart';
 // Import your state management class
@@ -52,6 +53,23 @@ class _TourListScreenState extends State<TourListScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            Row(
+              children: [
+                const Text('Logout'),
+                IconButton(
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => const LoginPage()),
+                    );
+                  },
+                  icon: const Icon(
+                    Icons.exit_to_app,
+                  ),
+                ),
+              ],
+            ),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.center,

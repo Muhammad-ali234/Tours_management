@@ -2,14 +2,16 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:sqflite/sqflite.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:toursapp/model.dart';
 import 'package:syncfusion_flutter_xlsio/xlsio.dart' as xlsio;
 
 class DatabaseHelper {
-  final String databaseName = "test6.db";
+  final String databaseName = "test20.db";
+  late Database _database;
 
   String tourDataTable = '''
 CREATE TABLE tours (
@@ -28,7 +30,6 @@ CREATE TABLE tours (
   Future<Database> init() async {
     sqfliteFfiInit();
     databaseFactory = databaseFactoryFfi;
-
     final databasePath = await getDatabasesPath();
     final path = join(databasePath, databaseName);
     return openDatabase(path, version: 1, onCreate: (db, version) async {
@@ -233,12 +234,19 @@ CREATE TABLE tours (
   Future<File> generateExcelForMonth(String monthYear) async {
     final List<Tour> tours = await getToursForMonth(monthYear);
 
-    final workbook = xlsio.Workbook();
-    final sheet = workbook.worksheets[0];
+    final xlsio.Workbook workbook = xlsio.Workbook();
+    final xlsio.Worksheet sheet = workbook.worksheets[0];
 
+// Merge cells and set text alignment to center
+    sheet.mergeCells;
     sheet.getRangeByIndex(1, 1).setText('Monthly Sheet');
+    sheet.getRangeByIndex(1, 1).cellStyle.hAlign = xlsio.HAlignType.center;
 
-    // Write headers
+// Increase font size
+    sheet.getRangeByIndex(1, 1).cellStyle.fontSize =
+        20; // Adjust the font size as needed
+
+// Set the headers for Date, Description, Invoice amount, Net Amount, and Margin
     sheet.getRangeByIndex(2, 1).setText('Date');
     sheet.getRangeByIndex(2, 2).setText('Description');
     sheet.getRangeByIndex(2, 3).setText('Invoice amount');
@@ -247,12 +255,14 @@ CREATE TABLE tours (
 
     // Write tour data
     for (int i = 0; i < tours.length; i++) {
-      final tour = tours[i];
-      sheet.getRangeByName('A${i + 3}').setText(tour.date);
-      sheet.getRangeByName('B${i + 3}').setText(tour.name);
-      sheet.getRangeByName('C${i + 3}').setText(tour.invoiceAmount.toString());
-      sheet.getRangeByName('D${i + 3}').setText(tour.netAmount.toString());
-      sheet.getRangeByName('E${i + 3}').setText(tour.margin.toString());
+      final Tour tour = tours[i];
+      // Start writing data from row 3 onwards
+      int rowIndex = i + 3;
+      sheet.getRangeByName('A$rowIndex').setText(tour.date);
+      sheet.getRangeByName('B$rowIndex').setText(tour.name);
+      sheet.getRangeByName('C$rowIndex').setText(tour.invoiceAmount.toString());
+      sheet.getRangeByName('D$rowIndex').setText(tour.netAmount.toString());
+      sheet.getRangeByName('E$rowIndex').setText(tour.margin.toString());
     }
 
     // Calculate total values
@@ -267,22 +277,28 @@ CREATE TABLE tours (
     }
 
     // Write total values to the last row of each numeric column
-    final int lastRowIndex = tours.length + 2;
+    final int lastRowIndex = tours.length + 3; // Move this line here
 
+    sheet.getRangeByName('A$lastRowIndex').setText('Total:');
     sheet
         .getRangeByName('C$lastRowIndex')
         .setText(totalInvoiceAmount.toString());
     sheet.getRangeByName('D$lastRowIndex').setText(totalNetAmount.toString());
     sheet.getRangeByName('E$lastRowIndex').setText(totalMargin.toString());
 
-    // Clear "Date" and "Description" headers from the last row
-    sheet.getRangeByIndex(lastRowIndex, 1).setText('');
-    sheet.getRangeByIndex(lastRowIndex, 2).setText('');
-
     // Save workbook
-    final output = await getTemporaryDirectory();
-    final file = File('${output.path}/tours_$monthYear.xlsx');
-    await workbook.save();
+    final Directory outputDir = await getTemporaryDirectory();
+    final String filePath = '${outputDir.path}/tours_$monthYear.xlsx';
+    final File file = File(filePath);
+
+    // Save the workbook to the file
+    final List<int> bytes = workbook.saveAsStream();
+    try {
+      await file.writeAsBytes(bytes);
+    } catch (e) {
+      print('Error writing file: $e');
+      // Handle the error (e.g., display an error message to the user)
+    }
 
     // Dispose the workbook
     workbook.dispose();
