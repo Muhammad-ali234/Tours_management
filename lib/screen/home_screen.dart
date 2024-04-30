@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:open_file/open_file.dart';
 import 'package:provider/provider.dart';
 import 'package:syncfusion_flutter_datagrid/datagrid.dart';
+<<<<<<< HEAD:lib/screen/home_screen.dart
 import 'package:toursapp/widget/add_new_sheet_widget.dart';
 import 'package:toursapp/provider/tourdata.dart';
 import 'package:toursapp/widget/clear_data_widget.dart';
@@ -13,6 +14,14 @@ import 'package:toursapp/screen/login_screen.dart';
 import 'package:toursapp/model/model.dart';
 import 'package:toursapp/widget/changetable_header_form.dart';
 import 'package:toursapp/provider/table_headers.dart';
+=======
+import 'package:toursapp/data_table_source.dart'; // Alias for data_table_source.dart
+import 'package:toursapp/db_helper.dart';
+import 'package:toursapp/form_screen.dart';
+import 'package:toursapp/login_screen.dart';
+import 'package:toursapp/model.dart';
+import 'package:toursapp/tourdata.dart';
+>>>>>>> 4f49188fb36ca33d690c615cb200af797c28ac64:lib/home_screen.dart
 // Import your state management class
 
 class TourListScreen extends StatefulWidget {
