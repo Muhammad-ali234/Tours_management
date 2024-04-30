@@ -1,11 +1,16 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:toursapp/model.dart';
-import 'package:toursapp/splash_screen.dart';
-import 'package:toursapp/tourdata.dart';
+import 'package:toursapp/model/model.dart';
+import 'package:toursapp/provider/tourdata.dart';
+import 'package:toursapp/screen/splash_screen.dart';
+import 'package:toursapp/provider/table_headers.dart';
 
-void main() {
-  runApp(const MyApp());
+Future main() async {
+  runApp(
+    const MyApp(),
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -13,18 +18,24 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) =>
-          TourData(context), // Provide your state management class here
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        title: 'Tour Management',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        home: const TourManagementApp(), // Display splash screen initially
-      ),
-    );
+    return MultiProvider(
+        providers: [
+          ChangeNotifierProvider(
+            create: (context) => TourData(context),
+          ),
+          ChangeNotifierProvider(
+            create: (context) => TableHeaders(),
+          ),
+        ],
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Tour Management',
+          theme: ThemeData(
+            primarySwatch: Colors.blue,
+          ),
+          home: const TourManagementApp(),
+          // Display splash screen initially
+        ));
   }
 }
 
