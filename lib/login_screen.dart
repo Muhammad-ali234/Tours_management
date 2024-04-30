@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:toursapp/home_screen.dart';
+import 'package:toursapp/screen/home_screen.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({
