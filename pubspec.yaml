@@ -37,7 +37,11 @@ dependencies:
   cupertino_icons: ^1.0.6
   
   path_provider: ^2.1.2
+<<<<<<< HEAD
 
+=======
+  sqflite: ^2.3.2
+>>>>>>> 4f49188fb36ca33d690c615cb200af797c28ac64
   flutter_launcher_icons: ^0.13.1
   pdf: ^3.10.8
   open_file: ^3.3.2
@@ -47,10 +51,16 @@ dependencies:
   provider: ^6.1.2
   uuid: ^4.3.3
   syncfusion_flutter_xlsio: ^25.1.38
+<<<<<<< HEAD
   filepicker_windows: ^2.1.0
   file_picker: ^8.0.0+1
   shared_preferences: ^2.2.2
   excel: ^4.0.2
+=======
+  sqflite_common_ffi: ^2.3.3
+  filepicker_windows: ^2.1.0
+  file_picker: ^8.0.0+1
+>>>>>>> 4f49188fb36ca33d690c615cb200af797c28ac64
 
 
   

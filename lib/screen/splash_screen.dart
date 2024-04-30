@@ -1,8 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+<<<<<<< HEAD:lib/screen/splash_screen.dart
 import 'package:toursapp/provider/tourdata.dart';
 import 'package:toursapp/screen/login_screen.dart';
+=======
+import 'package:toursapp/login_screen.dart';
+import 'package:toursapp/tourdata.dart';
+>>>>>>> 4f49188fb36ca33d690c615cb200af797c28ac64:lib/splash_screen.dart
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
